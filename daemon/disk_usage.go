@@ -8,7 +8,6 @@ import (
 	"github.com/moby/moby/v2/daemon/internal/filters"
 	"github.com/moby/moby/v2/daemon/server/backend"
 	"github.com/moby/moby/v2/daemon/server/imagebackend"
-	"github.com/moby/moby/v2/internal/sliceutil"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
@@ -38,7 +37,7 @@ func (daemon *Daemon) containerDiskUsage(ctx context.Context, verbose bool) (*ba
 		}
 		for _, ctr := range containers {
 			du.TotalSize += ctr.SizeRw
-			if !isActive(ctr) {
+			if !isActive(&ctr) {
 				du.Reclaimable += ctr.SizeRw
 				du.ActiveCount--
 			}
@@ -49,7 +48,7 @@ func (daemon *Daemon) containerDiskUsage(ctx context.Context, verbose bool) (*ba
 		}
 
 		if verbose {
-			du.Items = sliceutil.Deref(containers)
+			du.Items = containers
 		}
 
 		return du, nil
@@ -94,7 +93,7 @@ func (daemon *Daemon) imageDiskUsage(ctx context.Context, verbose bool) (*backen
 		}
 
 		if verbose {
-			du.Items = sliceutil.Deref(images)
+			du.Items = images
 		}
 
 		return du, nil
@@ -127,7 +126,7 @@ func (daemon *Daemon) localVolumesSize(ctx context.Context, verbose bool) (*back
 		}
 
 		if verbose {
-			du.Items = sliceutil.Deref(volumes)
+			du.Items = volumes
 		}
 
 		return du, nil

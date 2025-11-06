@@ -38,6 +38,12 @@ func (v *volumeRouter) getVolumesList(ctx context.Context, w http.ResponseWriter
 		return err
 	}
 
+	// FIXME(thaJeztah): change ListResponse to a non-pointer slice
+	var vols []*volume.Volume
+	for _, vol := range volumes {
+		vols = append(vols, &vol)
+	}
+
 	version := httputils.VersionFromContext(ctx)
 	if versions.GreaterThanOrEqualTo(version, clusterVolumesVersion) && v.cluster.IsManager() {
 		clusterVolumes, swarmErr := v.cluster.GetVolumes(volumebackend.ListOptions{Filters: f})
@@ -49,10 +55,12 @@ func (v *volumeRouter) getVolumesList(ctx context.Context, w http.ResponseWriter
 			warnings = append(warnings, swarmErr.Error())
 		}
 		// add the cluster volumes to the return
-		volumes = append(volumes, clusterVolumes...)
+		for _, vol := range clusterVolumes {
+			vols = append(vols, &vol)
+		}
 	}
 
-	return httputils.WriteJSON(w, http.StatusOK, &volume.ListResponse{Volumes: volumes, Warnings: warnings})
+	return httputils.WriteJSON(w, http.StatusOK, &volume.ListResponse{Volumes: vols, Warnings: warnings})
 }
 
 func (v *volumeRouter) getVolumeByName(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
