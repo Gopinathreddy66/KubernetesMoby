@@ -8,15 +8,13 @@ BUILDX ?= $(DOCKER) buildx
 API_DIR := $(CURDIR)
 PROJECT_PATH := /go/src/github.com/moby/moby
 
-DOCKER_ENVS := -e GOPATH=/go
-
 DOCKER_MOUNT := -v "$(API_DIR):$(PROJECT_PATH)/api"
 
 DOCKER_IMAGE := docker-api-dev
 
 DOCKER_WORKDIR := -w $(PROJECT_PATH)/api
 
-DOCKER_FLAGS := $(DOCKER) run --rm $(DOCKER_ENVS) $(DOCKER_MOUNT) $(DOCKER_WORKDIR)
+DOCKER_FLAGS := $(DOCKER) run --rm $(DOCKER_MOUNT) $(DOCKER_WORKDIR)
 DOCKER_RUN := $(DOCKER_FLAGS) "$(DOCKER_IMAGE)"
 
 DOCKER_CONTAINER_NAME := $(if $(CONTAINER_NAME),--name $(CONTAINER_NAME),)
@@ -63,5 +61,3 @@ validate-swagger-gen: build ## validate that generated types are up-to-date
 .PHONY: help
 help: ## display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-
-.DEFAULT_GOAL := help
