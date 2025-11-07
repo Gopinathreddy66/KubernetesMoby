@@ -1052,6 +1052,8 @@ func (s *DockerDaemonSuite) TestBridgeIPIsExcludedFromAllocatorPool(c *testing.T
 	s.d.StartWithBusybox(testutil.GetContext(c), c, "--bip", bridgeRange)
 	defer s.d.Restart(c)
 
+	apiCLient := s.d.NewClientT(c)
+
 	var cont int
 	for {
 		contName := fmt.Sprintf("container%d", cont)
@@ -1060,9 +1062,14 @@ func (s *DockerDaemonSuite) TestBridgeIPIsExcludedFromAllocatorPool(c *testing.T
 			// pool exhausted
 			break
 		}
-		ip, err := s.d.Cmd("inspect", "--format", "'{{.NetworkSettings.IPAddress}}'", contName)
-		assert.Assert(c, err == nil, ip)
 
+		res, err := apiCLient.ContainerInspect(c.Context(), contName, client.ContainerInspectOptions{})
+		assert.NilError(c, err)
+
+		assert.Check(c, res.Container.NetworkSettings != nil)
+		assert.Check(c, res.Container.NetworkSettings.Networks["bridge"] != nil)
+		ip := res.Container.NetworkSettings.Networks["bridge"].IPAddress.String()
+		assert.Assert(c, err == nil, ip)
 		assert.Assert(c, ip != bridgeIP)
 		cont++
 	}
@@ -2004,6 +2011,9 @@ func (s *DockerDaemonSuite) TestExecWithUserAfterLiveRestore(c *testing.T) {
 
 func (s *DockerDaemonSuite) TestRemoveContainerAfterLiveRestore(c *testing.T) {
 	testRequires(c, DaemonIsLinux, testEnv.IsLocalDaemon)
+	if testEnv.UsingSnapshotter() {
+		c.Skip("FIXME(thaJeztah): test depends on GraphDriver.Data") // FIXME(thaJeztah): test depends on GraphDriver.Data, which is not available with containerd
+	}
 	s.d.StartWithBusybox(testutil.GetContext(c), c, "--live-restore")
 	out, err := s.d.Cmd("run", "-d", "--name=top", "busybox", "top")
 	assert.NilError(c, err, "Output: %s", out)
