@@ -55,7 +55,7 @@ validate-swagger: build ## validate the swagger.yaml file
 	$(DOCKER_RUN) ./scripts/validate-swagger.sh
 
 .PHONY: validate-swagger-gen
-validate-swagger-gen: build ## validate that generated types are up-to-date
+validate-swagger-gen: build ## validate generated types are up-to-date
 	$(DOCKER_RUN) ./scripts/validate-swagger-gen.sh
 
 .PHONY: help

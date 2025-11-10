@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 API_DIR="${SCRIPT_DIR}/.."
 
-TMP_DIR="$(mktemp -d -p /go/src)"
+TMP_DIR="$(mktemp -d)"
 trap "rm -rf ${TMP_DIR}" EXIT
 GEN_FILES=()
 
